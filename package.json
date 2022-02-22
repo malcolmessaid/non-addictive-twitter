@@ -1,0 +1,28 @@
+{
+  "name": "non-addictive-twitter",
+  "version": "1.0.0",
+  "description": "art project to present twitter in a less addictive, toxis fashion",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/malcolmessaid/non-addictive-twitter.git"
+  },
+  "author": "M. Malcolm Essaid",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/malcolmessaid/non-addictive-twitter/issues"
+  },
+  "homepage": "https://github.com/malcolmessaid/non-addictive-twitter#readme",
+  "dependencies": {
+    "cron": "^1.8.2",
+    "express": "^4.17.3",
+    "fetch": "^1.1.0",
+    "node-schedule": "^2.1.0",
+    "nodemon": "^2.0.15",
+    "twitter-api-v2": "^1.11.0"
+  }
+}
