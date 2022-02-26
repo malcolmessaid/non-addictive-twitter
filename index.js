@@ -1,5 +1,7 @@
 const express = require('express')
 const fetch = require('node-fetch')
+
+
 const app = express()
 const schedule = require('node-schedule');
 const CronJob = require('cron').CronJob;
@@ -10,15 +12,49 @@ const { dirname } = require('path');
 const appDir = dirname(require.main.filename);
 const frontEndDir = require('path').join(__dirname, "frontend/");
 
+
+// DATABASE CODE
+const { Client } = require('pg');
+
+// console.log("url", process.env.HEROKU_POSTGRESQL_IVORY_URL);
+const client = new Client({
+  connectionString: process.env.HEROKU_POSTGRESQL_IVORY_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+
+client.connect().catch(function(err){
+  console.log(err);
+});
+
+
+// console.log(client);
+client.query('select * from my_schema.tweets;', (err, res) => {
+  if (err){
+    console.log(err);
+    throw err;
+
+  }
+  for (let row of res.rows) {
+    console.log(JSON.stringify(row));
+  }
+  client.end();
+});
+
+
+
+
 // TODO: FIGURE OUT HOW TO AUTHROZIE FETCH REQUEST TO TWITTER
 
 const ACCOUNTS = {'nathanaclark': 2407905670}
 const TIMELINE_URL = `https://api.twitter.com/2/users/:id/tweets?max_results=10&expansions=attachments.media_keys,referenced_tweets.id`
 
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+// app.listen(port, () => {
+//   console.log(`Example app listening on port ${port}`)
+// })
 
 
 
