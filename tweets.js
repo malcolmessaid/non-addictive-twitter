@@ -13,6 +13,12 @@ const { Client, Pool } = require('pg');
 // const {index} = require('./index.js');
 
 
+
+// TODO: SET UP DEV DATABASE
+// TODO: e
+
+
+
 const ACCOUNTS = {2407905670:'nathanaclark' , 293054700: 'Flav_Bateman'}
 
 
