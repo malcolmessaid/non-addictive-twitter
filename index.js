@@ -20,6 +20,8 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
 
+// console.log();
+
 
 // DATABASE CODE
 // console.log("url", process.env.HEROKU_POSTGRESQL_IVORY_URL);

@@ -49,7 +49,7 @@ async function pull_tweet(id)
   console.log(str);
   const options = {
     headers: new fetch.Headers({
-        'Authorization': env.bearer,
+        'Authorization': process.env.BEARER,
     }),
   }
   var res = await fetch(str, options).then(res => res.text())
@@ -71,7 +71,7 @@ async function pull_timeline_outer(user_id, last_tweet_id)
   {
     headers: new fetch.Headers({
         'User-Agent':'art_project_2_3',
-        'Authorization': env.bearer,
+        'Authorization': process.env.BEARER,
     }),
   }).then(res => res.text())
     .then(data => {
