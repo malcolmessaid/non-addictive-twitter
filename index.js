@@ -5,7 +5,7 @@ const fetch = require('node-fetch')
 const app = express()
 const schedule = require('node-schedule');
 const CronJob = require('cron').CronJob;
-const {env} = require('./env.js');
+// const {env} = require('./env.js');
 const port = process.env.PORT || 5000;
 
 const { dirname } = require('path');
@@ -25,25 +25,25 @@ app.listen(port, () => {
 
 // DATABASE CODE
 // console.log("url", process.env.HEROKU_POSTGRESQL_IVORY_URL);
-const pool = new Pool({
-  connectionString: process.env.HEROKU_POSTGRESQL_IVORY_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
-pool.connect().catch(function(err){
-  console.log(err);
-});
-pool.query('select * from my_schema.tweets;', (err, res) => {
-  if (err){
-    console.log(err);
-    throw err;
-  }
-  for (let row of res.rows) {
-    console.log(JSON.stringify(row));
-  }
-  pool.end();
-});
+// const pool = new Pool({
+//   connectionString: process.env.HEROKU_POSTGRESQL_IVORY_URL,
+//   ssl: {
+//     rejectUnauthorized: false
+//   }
+// });
+// pool.connect().catch(function(err){
+//   console.log(err);
+// });
+// pool.query('select * from my_schema.tweets;', (err, res) => {
+//   if (err){
+//     console.log(err);
+//     throw err;
+//   }
+//   for (let row of res.rows) {
+//     console.log(JSON.stringify(row));
+//   }
+//   pool.end();
+// });
 
 
 
