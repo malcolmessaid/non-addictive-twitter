@@ -13,6 +13,18 @@ const frontEndDir = require('path').join(__dirname, "frontend/");
 const { Client, Pool } = require('pg');
 const ACCOUNTS = {2407905670:'nathanaclark' , 293054700: 'Flav_Bateman'}
 
+
+async function update(){
+  for (var user in ACCOUNTS) {
+    if (p.hasOwnProperty(user)) {
+        let last_tweet_id = await get_most_recent_tweet(user);
+        var response = await pull_timeline_outer(user, last_tweet_id) // Pull recent tweets
+        write_timeline_to_db(user, response, last_tweet_id) // write tweets to database
+    }
+  }
+}
+
+
 async function pull_tweet(id)
 {
   const str = `https://api.twitter.com/2/tweets/1496087033093230599`
@@ -44,7 +56,6 @@ async function pull_timeline_outer(user_id, last_tweet_id)
     }),
   }).then(res => res.text())
     .then(data => {
-      // console.log("Printing Recent Tweets")
       return JSON.parse(data)
     })
   return res

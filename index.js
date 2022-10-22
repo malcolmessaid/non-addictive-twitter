@@ -43,8 +43,13 @@ app.get('/', async (req, res) =>
 
 // TODO:
 /*
- 1. create users table that keeps track of most recent tweet for every user
- 2.
+ 1. create users-table that keeps track of most recent tweet for every user
+ 2. write create_user fucntuon
+ 3. wriet get_most_recent_tweet
+ 4. populate database
+
+ 5. begin writing function to send data to frontned
+ 6. think about cache 
 
 */
 
