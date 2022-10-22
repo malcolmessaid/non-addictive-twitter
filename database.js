@@ -4,8 +4,8 @@ require('dotenv').config();
 
 
 
-console.log("database.js", process.env.NODE_ENV);
-
+// console.log("database.js", process.env.NODE_ENV);
+console.log('DATABASE.JS RUNNINS');
 
 
 /*
