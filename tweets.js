@@ -5,26 +5,39 @@ const env = require('dotenv').config()
 
 // const {env} = require('./env.js');
 const {sample_tweet} = require('./sample.js');
+const {pool} = require('./database.js')
+// const {users} = require('./users.js')
+
 const port = process.env.PORT || 3000;
 
 const { dirname } = require('path');
 const appDir = dirname(require.main.filename);
 const frontEndDir = require('path').join(__dirname, "frontend/");
 const { Client, Pool } = require('pg');
-const ACCOUNTS = {2407905670:'nathanaclark' , 293054700: 'Flav_Bateman'}
+let users = {}
 
+// console.log(users);
 
 async function update(){
-  for (var user in ACCOUNTS) {
-    if (p.hasOwnProperty(user)) {
-        let last_tweet_id = await get_most_recent_tweet(user);
-        var response = await pull_timeline_outer(user, last_tweet_id) // Pull recent tweets
-        write_timeline_to_db(user, response, last_tweet_id) // write tweets to database
+  for (var user in users) {
+    console.log("(update) user_id: ", user);
+    let last_tweet_id = await get_most_recent_tweet(user);
+    var response = await pull_user_timeline_from_twitter_api(user, last_tweet_id, -1)
+    let newest = last_tweet_id
+    // console.log("response", typeof(response.data));
+    if (typeof(response.data) != "undefined"){
+      newest = response.data[0].id
+      write_timeline_to_db(user, response, newest) // write tweets to database and write most recent tweet
+
     }
+    // console.log(response.data);
+    //     // WRITE THOSE TWEETS TO THE CACHE
   }
 }
 
-
+/* pull_tweet - testing function to pull JSON from Twitter api
+ * id - id of tweet you want to pull
+*/
 async function pull_tweet(id)
 {
   const str = `https://api.twitter.com/2/tweets/1496087033093230599`
@@ -41,13 +54,19 @@ async function pull_tweet(id)
     })
 }
 
-/*pull_timeline_outer : Pulls recent tweets from given user
-    user_id: User whose timeline you are pulling
-    last_tweet_id: most recent tweet pulled. Used to only pull tweets after this
-*/
-async function pull_timeline_outer(user_id, last_tweet_id)
+/* pull_user_timeline_from_twitter_api: Given user id, queires twitter api
+ * and returns json object representing users tweets since their most recent tweet
+ *   user_id: User whose timeline you are pulling
+ *  last_tweet_id: most recent tweet pulled. Used to only pull tweets after this
+ */
+async function pull_user_timeline_from_twitter_api(user_id, last_tweet_id, tweet_count)
 {
-  const str = `https://api.twitter.com/2/users/${user_id}/tweets?since_id=${last_tweet_id}&expansions=attachments.media_keys,referenced_tweets.id,in_reply_to_user_id`
+  let str = `https://api.twitter.com/2/users/${user_id}/tweets?tweet.fields=created_at&since_id=${last_tweet_id}&expansions=attachments.media_keys,referenced_tweets.id,in_reply_to_user_id`
+  if (tweet_count != -1 || last_tweet_id == -1){
+    // console.log('asdfadsfadsfads');
+    str = `https://api.twitter.com/2/users/${user_id}/tweets?tweet.fields=created_at&max_results=${tweet_count}&expansions=attachments.media_keys,referenced_tweets.id,in_reply_to_user_id`
+  }
+
   res = await fetch(str,
   {
     headers: new fetch.Headers({
@@ -62,108 +81,116 @@ async function pull_timeline_outer(user_id, last_tweet_id)
 }
 
 
-/*write_timeline_to_db : parses tweet object to be sent to database
-    user_id: User whose timeline you are pulling
-    json: json object of tweets recieved from twitter API
-*/
+/* write_timeline_to_db : Parses JSON object returend by pull_user_timeline_from_twitter_api.
+ * calls parse_indvidual_tweet on each of the tweets, which writes to database
+ *   user_id: User whose timeline you are pulling
+ *   json: json object of tweets recieved from twitter API
+ */
 async function write_timeline_to_db(user_id, json, last_tweet_id){
   const data = json["data"]
-  let newest_id = json.meta.newest_id
-
-
-  const pool = new Pool({
-    connectionString: process.env.HEROKU_POSTGRESQL_IVORY_URL,
-    ssl: {
-      rejectUnauthorized: false
-    }
-  });
-  await pool.connect().catch(function(err){
-    console.log(err);
-  });
+  // console.log(json.meta.);
+  let newest_id = last_tweet_id
 
   for (var i = 0; i < data.length; i++) {
     let curr_tweet = data[i];
     await parse_indvidual_tweet(user_id, curr_tweet, last_tweet_id, pool)
   }
-  // save last tweet
-
-  let sql_command = 'insert into my_schema.users(user_id, tweet_id, username) VALUES($1, $2, $3) RETURNING *'
-  let values = [user_id, newest_id, ACCOUNTS[user_id],type]
-  pool.query(sql_command, values, (err, res) =>{
-    if (err){
-      console.log(err);
-    }
-    else {
-      console.log(res.rows);
-    }
+  let sql_command = `update my_schema.users set last_tweet_pulled = ${newest_id}
+                      where user_id = ${user_id}`
+  pool.query(sql_command, [], (err, res) =>{
+    if (err){ console.log(err); }
+    else {}
   })
-  return newest_id; // (you might need to store this in database???)
+  return newest_id;
 }
 
 
+/* parse_indvidual_tweet : Called in write_timeline_to_db. Writes individual
+* tweets to Database. Parses what type of tweet and writes fields accordingly
+ *   user_id: User whose timeline you are pulling
+ *   tweet: json object of tweet recieved from twitter API
+ *   last_tweet_id: most recent tweet pulled. Used to only pull tweets after this
+ *   pool: database connection
+ */
 async function parse_indvidual_tweet(user_id, tweet, last_tweet_id, pool){
   // if not a reply OR a reply to yourself
+  // console.log('(parse_indvidual_tweet) tweet.in_reply_to_user_id: ', tweet.in_reply_to_user_id);
   if (!tweet.in_reply_to_user_id || tweet.in_reply_to_user_id == user_id){
     let tweet_id = tweet.id
     let image_bool = tweet.attachments
-    let ref_bool = !tweet.referenced_tweets
-
     let text_to_save = tweet.text
     let referenced_tweets = []
     let referenced_media = []
-    let type = 'standard'
+    let reference_type = []
+    let datetime = tweet.created_at;
+    // console.log(tweet);
 
+    // console.log('(parse_indvidual_tweet): tweet_id', tweet_id);
     if (typeof(tweet.in_reply_to_user_id) != 'undefined' ){
-      type = 'replied_to'
-      // The Repleid to tweet should typically already be in the database. Unless it was tweet befroe I wrote the application. Nathan does reply to tweet from like 5 years ago soetime
-      // NEED TO GET STRING OF TWEETS REPLIED TO
-
-      // check if tweet in database
-      referenced_tweets = [tweet.referenced_tweets[0]['id']]
+      for (var i = 0; i < tweet.referenced_tweets.length; i++) {
+        referenced_tweets.push(tweet.referenced_tweets[i]['id'])
+        reference_type.push(tweet.referenced_tweets[i]['type'])
+      }
     }
     else if (typeof(tweet.referenced_tweets) != 'undefined' ){
-      type = 'retweet'
-      // NEED TO PULL TWEET REPLIED TO
-      referenced_tweets = [tweet.referenced_tweets[0]['id']]
-
-      // "QUOTE TWEETING IN A REPLY - EDGE CASE"
-      return
+      for (var i = 0; i < tweet.referenced_tweets.length; i++) {
+        referenced_tweets.push(tweet.referenced_tweets[i]['id'])
+        reference_type.push(tweet.referenced_tweets[i]['type'])
+      }
     }
 
     if (typeof(tweet.attachments) != 'undefined' ){
       let str_to_toke_with = " https://t.co/"
       text_to_save = tweet.text.split(str_to_toke_with)[0]
-
-
       // deal with saving the images later
       referenced_media = tweet.attachments.media_keys
     }
-
-    // Write to Database
-    let sql_command = 'insert into my_schema.tweets("id", text, user_id, referenced_tweets, referenced_media, username, type) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *'
-    let values = [tweet_id, text_to_save, user_id, referenced_tweets, referenced_media, ACCOUNTS[user_id],type]
+    let sql_command = 'insert into my_schema.tweets("id", text, user_id, referenced_tweets, referenced_media, username, type, datetime) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *'
+    // set username to accoubts. if does not exist. pull from twitter api?
+    let values = [tweet_id, text_to_save, user_id, referenced_tweets, referenced_media, users[user_id.toString()],reference_type, datetime]
     pool.query(sql_command, values, (err, res) =>{
-      if (err){
-        console.log(err);
-      }
-      else {
-        console.log(res.rows);
-      }
+      if (err){ console.log(err);}
+      else {}
     })
+  }
+  else
+  {
+    console.log("parse_indvidual_tweet: not storing tweet because it is a reply")
   }
 }
 
 
-async function create_user(username){
-
-  // 1. get user_id
-  // 2. pull last 30 tweets
-  // 3. store most recent tweet update
-
+async function set_accounts(){
+  // set accounts from users table
+  let sql_command = `select username, user_id from my_schema.users`
+  await pool
+    .query(sql_command, [],)
+    .catch((err) => {
+      console.log('Error Pulling Username List');
+    })
+    .then(res => {
+      res = res.rows;
+      let temp = {}
+      for (var i = 0; i < res.length; i++) {
+        temp[res[i].user_id] = res[i].username
+      }
+      users = temp
+      console.log('asdfad');
+      // console.log('user/');
+    })
 }
 
 async function get_most_recent_tweet(user_id){
   // pull from users table
+  let command = `select last_tweet_pulled from my_schema.users
+                where user_id = ${user_id}`
+  let res = await pool.query(command, [],)
+    .catch((err) => console.log("Error get_most_recent_tweet: issue pulling most recent tweet"))
+    .then((res) => {
+      // console.log();
+      return res.rows[0].last_tweet_pulled;
+    })
+  return res;
 }
 
 
@@ -174,8 +201,10 @@ async function store_media(user_id, tweet, last_tweet_id, pool){
 
 }
 
+set_accounts();
 
-exports.pull_timeline_outer = pull_timeline_outer;
+exports.pull_user_timeline_from_twitter_api = pull_user_timeline_from_twitter_api;
 exports.write_timeline_to_db = write_timeline_to_db;
-
-// module.exports = {pull_timeline_outer};
+exports.set_accounts = set_accounts;
+exports.update = update;
+exports.users = users;
