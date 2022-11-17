@@ -14,7 +14,7 @@ const { dirname } = require('path');
 const appDir = dirname(require.main.filename);
 const frontEndDir = require('path').join(__dirname, "frontend/");
 const { Client, Pool } = require('pg');
-let users = {}
+let users = null;
 
 // console.log(users);
 
@@ -23,8 +23,16 @@ const Enum = {
   TWEET_COUNT_TRUE: 50,
 };
 
+
+function get_users(){
+  return users;
+}
+
 async function update(){
+  set_accounts(false);
+  console.log(users);
   for (var user in users) {
+    console.log(user);
     let last_tweet_id = await get_most_recent_tweet(user);
     var response = await fetch_user_timeline_from_twitter_api(user, last_tweet_id, Enum.TWEET_COUNT_FALSE)
     let newest = last_tweet_id
@@ -156,7 +164,6 @@ async function parse_indvidual_tweet(user_id, tweet, last_tweet_id, pool){
     let sql_command = 'insert into my_schema.tweets("id", text, user_id, referenced_tweets, referenced_media, username, type, datetime) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *'
     // set username to accoubts. if does not exist. pull from twitter api?
     let values = [tweet_id, text_to_save, user_id, referenced_tweets, referenced_media, users[user_id.toString()],reference_type, datetime]
-    console.log("values", values);
     pool.query(sql_command, values, (err, res) =>{
       if (err){ console.log(err);}
       else {}
@@ -169,10 +176,18 @@ async function parse_indvidual_tweet(user_id, tweet, last_tweet_id, pool){
 }
 
 
-async function set_accounts(){
+async function set_accounts(create_account_flag){
   // set accounts from users table
+  if (users != null && !create_account_flag){
+    console.log("Not Re-running set_accounts");
+    return
+  }
+  else {
+    console.log("Running set_accounts");
+  }
+  // console.log("Is my if statement true");
   let sql_command = `select username, user_id from my_schema.users`
-  await pool
+  let res = await pool
     .query(sql_command, [],)
     .catch((err) => {
       console.log('Error Pulling Username List');
@@ -184,10 +199,14 @@ async function set_accounts(){
         temp[res[i].user_id] = res[i].username
       }
       users = temp
-      console.log('asdfad');
-      // console.log('user/');
+      return users
+      // console.log('asdfad');
+      // console.log('(set_accounts) users:', users);
     })
+    return res;
 }
+
+
 
 async function get_most_recent_tweet(user_id){
   // pull from users table
@@ -218,3 +237,4 @@ exports.update = update;
 exports.users = users;
 exports.fetch_tweet = fetch_tweet;
 exports.parse_indvidual_tweet = parse_indvidual_tweet;
+exports.get_users = get_users;

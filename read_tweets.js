@@ -5,9 +5,14 @@ const port = process.env.PORT || 3000;
 
 const { Client, Pool } = require('pg')
 const {pool} = require('./database.js')
+const {set_accounts, get_users} = require('./update_tweets.js')
 
 
-
+async function pull_tweets(){
+  set_accounts(false);
+  console.log("hello");
+  console.log("(pull_tweets) users:", get_users());
+}
 
 async function pull_user_tweets(user_id){
   let sql_command = `select * from my_schema.tweets where user_id = ${user_id} limit 10`
@@ -17,25 +22,26 @@ async function pull_user_tweets(user_id){
       return res.rows;
     })
 
-  // console.log(res);
-
   let quoted_tweets_to_pull = []
+  let indexes = []
   for (var i = 0; i < res.length; i++) {
     let tweet = res[i];
     if (tweet.type.includes('quoted')){
       quoted_tweets_to_pull.push(tweet.referenced_tweets[tweet.type.indexOf('quoted')])
+      indexes.push(i)
     }
   }
-
-  console.log(quoted_tweets_to_pull);
-
-  // for (i in res){
-  //
-  //   console.log(res[i]);
-  // }
-  // Loop through res. If quote tweeting or rewtweeting, get the other tweet.
-  // Otherwise Save indication that there is a
-
+  let quote_sql_command = 'SELECT * FROM my_schema.tweets WHERE id = ANY($1::bigint[])'
+  let quotes = await pool.query(quote_sql_command, [quoted_tweets_to_pull],)
+    .catch((err) => console.log(err))
+    .then((res) =>{
+      return res.rows;
+    })
+  // console.log("(pull_user_tweets) quotes: ",quotes);
+  for (var i = 0; i < quoted_tweets_to_pull.length; i++) {
+    res[indexes[i]].quoted = quotes[i];
+   }
+   return res
 }
 
 
@@ -46,4 +52,5 @@ async function pull_thread(tweet_id){
 
 
 
-exports.pull_user_tweets = pull_user_tweets;
+// exports.pull_user_tweets = pull_user_tweets;
+exports.pull_tweets = pull_tweets;

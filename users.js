@@ -36,7 +36,7 @@ async function create_user(username){
     await pool.query(sql_command, values,)
       .catch((err) =>console.log('User ID already exists in database'))
     // console.log('before');
-    await set_accounts();
+    await set_accounts(true);
     // console.log('after');
     let timeline_object = await fetch_user_timeline_from_twitter_api(user_id, -1 , TWEET_COUNT_TRUE)
     newest = timeline_object.data[0].id
