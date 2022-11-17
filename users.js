@@ -5,8 +5,13 @@ const port = process.env.PORT || 3000;
 
 const { Client, Pool } = require('pg')
 const {pool} = require('./database.js')
-const {pull_user_timeline_from_twitter_api, write_timeline_to_db, set_accounts} = require('./tweets.js');
+const {fetch_user_timeline_from_twitter_api, write_timeline_to_db, set_accounts} = require('./update_tweets.js');
 let users = {}
+
+const Enum = {
+  TWEET_COUNT_FALSE: -1,
+  TWEET_COUNT_TRUE: 50,
+};
 
 /* create_user : Adds new user to user table, and populates tweets database accordingly
  *   username: User whose timeline you are pulling
@@ -30,11 +35,17 @@ async function create_user(username){
     let values = [user_id, username, -1, -1]
     await pool.query(sql_command, values,)
       .catch((err) =>console.log('User ID already exists in database'))
-    console.log('before');
+    // console.log('before');
     await set_accounts();
-    console.log('after');
-    let timeline_object = await pull_user_timeline_from_twitter_api(user_id, -1 , 50)
-    write_timeline_to_db(user_id, timeline_object, -1)
+    // console.log('after');
+    let timeline_object = await fetch_user_timeline_from_twitter_api(user_id, -1 , TWEET_COUNT_TRUE)
+    newest = timeline_object.data[0].id
+    write_timeline_to_db(user_id, timeline_object, newest)
+}
+
+
+async function delete_user(){
+  return -1
 }
 
 

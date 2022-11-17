@@ -18,30 +18,30 @@ let users = {}
 
 // console.log(users);
 
+const Enum = {
+  TWEET_COUNT_FALSE: -1,
+  TWEET_COUNT_TRUE: 50,
+};
+
 async function update(){
   for (var user in users) {
-    console.log("(update) user_id: ", user);
     let last_tweet_id = await get_most_recent_tweet(user);
-    var response = await pull_user_timeline_from_twitter_api(user, last_tweet_id, -1)
+    var response = await fetch_user_timeline_from_twitter_api(user, last_tweet_id, TWEET_COUNT_FALSE)
     let newest = last_tweet_id
-    // console.log("response", typeof(response.data));
     if (typeof(response.data) != "undefined"){
       newest = response.data[0].id
       write_timeline_to_db(user, response, newest) // write tweets to database and write most recent tweet
-
     }
-    // console.log(response.data);
-    //     // WRITE THOSE TWEETS TO THE CACHE
   }
 }
 
-/* pull_tweet - testing function to pull JSON from Twitter api
+/* fetch_tweet - testing function to pull JSON from Twitter api
  * id - id of tweet you want to pull
 */
-async function pull_tweet(id)
+async function fetch_tweet(id)
 {
-  const str = `https://api.twitter.com/2/tweets/1496087033093230599`
-  console.log(str);
+  const str = `https://api.twitter.com/2/tweets/${id}?tweet.fields=created_at&expansions=attachments.media_keys,referenced_tweets.id,in_reply_to_user_id`
+  // const str = `https://api.twitter.com/2/tweets/` + id
   const options = {
     headers: new fetch.Headers({
         'Authorization': process.env.BEARER,
@@ -49,17 +49,17 @@ async function pull_tweet(id)
   }
   var res = await fetch(str, options).then(res => res.text())
     .then(data => {
-
       return JSON.parse(data)
     })
+  return res;
 }
 
-/* pull_user_timeline_from_twitter_api: Given user id, queires twitter api
+/* fetch_user_timeline_from_twitter_api: Given user id, queires twitter api
  * and returns json object representing users tweets since their most recent tweet
  *   user_id: User whose timeline you are pulling
  *  last_tweet_id: most recent tweet pulled. Used to only pull tweets after this
  */
-async function pull_user_timeline_from_twitter_api(user_id, last_tweet_id, tweet_count)
+async function fetch_user_timeline_from_twitter_api(user_id, last_tweet_id, tweet_count)
 {
   let str = `https://api.twitter.com/2/users/${user_id}/tweets?tweet.fields=created_at&since_id=${last_tweet_id}&expansions=attachments.media_keys,referenced_tweets.id,in_reply_to_user_id`
   if (tweet_count != -1 || last_tweet_id == -1){
@@ -81,7 +81,7 @@ async function pull_user_timeline_from_twitter_api(user_id, last_tweet_id, tweet
 }
 
 
-/* write_timeline_to_db : Parses JSON object returend by pull_user_timeline_from_twitter_api.
+/* write_timeline_to_db : Parses JSON object returend by fetch_user_timeline_from_twitter_api.
  * calls parse_indvidual_tweet on each of the tweets, which writes to database
  *   user_id: User whose timeline you are pulling
  *   json: json object of tweets recieved from twitter API
@@ -112,6 +112,7 @@ async function write_timeline_to_db(user_id, json, last_tweet_id){
  *   last_tweet_id: most recent tweet pulled. Used to only pull tweets after this
  *   pool: database connection
  */
+ // TODO: change name from parse to write to db
 async function parse_indvidual_tweet(user_id, tweet, last_tweet_id, pool){
   // if not a reply OR a reply to yourself
   // console.log('(parse_indvidual_tweet) tweet.in_reply_to_user_id: ', tweet.in_reply_to_user_id);
@@ -123,19 +124,26 @@ async function parse_indvidual_tweet(user_id, tweet, last_tweet_id, pool){
     let referenced_media = []
     let reference_type = []
     let datetime = tweet.created_at;
-    // console.log(tweet);
-
-    // console.log('(parse_indvidual_tweet): tweet_id', tweet_id);
     if (typeof(tweet.in_reply_to_user_id) != 'undefined' ){
       for (var i = 0; i < tweet.referenced_tweets.length; i++) {
         referenced_tweets.push(tweet.referenced_tweets[i]['id'])
         reference_type.push(tweet.referenced_tweets[i]['type'])
+        //TODO: fetch and process refereced tweets
+
+        let ref_tweet = await fetch_tweet(tweet.referenced_tweets[i]['id']);
+        // console.log("(parse_indvidual_tweet) tweet_id",tweet_id);
+        await parse_indvidual_tweet(user_id, ref_tweet.data, -1, pool)
+
+
+        // console.log(ref_tweet);
+        // parse_indvidual_tweet()
       }
     }
     else if (typeof(tweet.referenced_tweets) != 'undefined' ){
       for (var i = 0; i < tweet.referenced_tweets.length; i++) {
         referenced_tweets.push(tweet.referenced_tweets[i]['id'])
         reference_type.push(tweet.referenced_tweets[i]['type'])
+        //TODO: fetch and process refereced tweets
       }
     }
 
@@ -148,6 +156,7 @@ async function parse_indvidual_tweet(user_id, tweet, last_tweet_id, pool){
     let sql_command = 'insert into my_schema.tweets("id", text, user_id, referenced_tweets, referenced_media, username, type, datetime) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *'
     // set username to accoubts. if does not exist. pull from twitter api?
     let values = [tweet_id, text_to_save, user_id, referenced_tweets, referenced_media, users[user_id.toString()],reference_type, datetime]
+    console.log("values", values);
     pool.query(sql_command, values, (err, res) =>{
       if (err){ console.log(err);}
       else {}
@@ -187,7 +196,6 @@ async function get_most_recent_tweet(user_id){
   let res = await pool.query(command, [],)
     .catch((err) => console.log("Error get_most_recent_tweet: issue pulling most recent tweet"))
     .then((res) => {
-      // console.log();
       return res.rows[0].last_tweet_pulled;
     })
   return res;
@@ -203,8 +211,10 @@ async function store_media(user_id, tweet, last_tweet_id, pool){
 
 set_accounts();
 
-exports.pull_user_timeline_from_twitter_api = pull_user_timeline_from_twitter_api;
+exports.fetch_user_timeline_from_twitter_api = fetch_user_timeline_from_twitter_api;
 exports.write_timeline_to_db = write_timeline_to_db;
 exports.set_accounts = set_accounts;
 exports.update = update;
 exports.users = users;
+exports.fetch_tweet = fetch_tweet;
+exports.parse_indvidual_tweet = parse_indvidual_tweet;

@@ -5,7 +5,7 @@ const port = process.env.PORT || 3000;
 
 const { dirname } = require('path');
 const { Client, Pool } = require('pg');
-// const {pull_user_timeline_from_twitter_api, write_timeline_to_db,} = require('./tweets.js');
+// const {fetch_user_timeline_from_twitter_api, write_timeline_to_db,} = require('./update_tweets.js');
 
 const pool = new Pool({
   connectionString: process.env.HEROKU_POSTGRESQL_IVORY_URL,
