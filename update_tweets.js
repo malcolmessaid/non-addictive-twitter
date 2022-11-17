@@ -26,7 +26,7 @@ const Enum = {
 async function update(){
   for (var user in users) {
     let last_tweet_id = await get_most_recent_tweet(user);
-    var response = await fetch_user_timeline_from_twitter_api(user, last_tweet_id, TWEET_COUNT_FALSE)
+    var response = await fetch_user_timeline_from_twitter_api(user, last_tweet_id, Enum.TWEET_COUNT_FALSE)
     let newest = last_tweet_id
     if (typeof(response.data) != "undefined"){
       newest = response.data[0].id

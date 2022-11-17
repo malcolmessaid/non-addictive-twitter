@@ -30,8 +30,10 @@ app.get('/', async (req, res) =>
   // update()
   // pull_user_tweets(18989355)
 
-  pull_user_tweets('1495841608863862786')
+  // pull_user_tweets('1495841608863862786')
+  // update()
 
+  pull_user_tweets('1495841608863862786')
 
   console.log("Log from get/: ", );
 })
