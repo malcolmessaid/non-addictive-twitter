@@ -9,9 +9,12 @@ const CronJob = require('cron').CronJob;
 // const {env} = require('./env.js');
 const port = process.env.PORT || 3000;
 
+const path = require('path');
 const { dirname } = require('path');
 const appDir = dirname(require.main.filename);
 const frontEndDir = require('path').join(__dirname, "frontend/");
+
+
 const { Client, Pool } = require('pg');
 const {update, fetch_tweet, parse_indvidual_tweet, get_users} = require('./update_tweets.js');
 const {create_user} = require('./users.js')
@@ -25,7 +28,8 @@ app.listen(port, () => {
 app.get('/', async (req, res) =>
 {
   // Pulling From Tweitter
-  res.sendFile('index.html', { root: frontEndDir})
+  console.log(frontEndDir);
+  res.sendFile('./index.html', { root: "frontend/"})
 
   console.log("Log from get/: ", );
 })

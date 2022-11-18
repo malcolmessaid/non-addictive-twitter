@@ -2,11 +2,7 @@ const express = require('express')
 const fetch = require('node-fetch')
 const env = require('dotenv').config()
 
-
-// const {env} = require('./env.js');
-const {sample_tweet} = require('./sample.js');
 const {pool} = require('./database.js')
-// const {users} = require('./users.js')
 
 const port = process.env.PORT || 3000;
 
