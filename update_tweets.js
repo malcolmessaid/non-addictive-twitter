@@ -16,7 +16,6 @@ const frontEndDir = require('path').join(__dirname, "frontend/");
 const { Client, Pool } = require('pg');
 let users = null;
 
-// console.log(users);
 
 const Enum = {
   TWEET_COUNT_FALSE: -1,
@@ -30,9 +29,7 @@ function get_users(){
 
 async function update(){
   set_accounts(false);
-  console.log(users);
   for (var user in users) {
-    console.log(user);
     let last_tweet_id = await get_most_recent_tweet(user);
     var response = await fetch_user_timeline_from_twitter_api(user, last_tweet_id, Enum.TWEET_COUNT_FALSE)
     let newest = last_tweet_id
@@ -96,7 +93,6 @@ async function fetch_user_timeline_from_twitter_api(user_id, last_tweet_id, twee
  */
 async function write_timeline_to_db(user_id, json, last_tweet_id){
   const data = json["data"]
-  // console.log(json.meta.);
   let newest_id = last_tweet_id
 
   for (var i = 0; i < data.length; i++) {
@@ -139,12 +135,7 @@ async function parse_indvidual_tweet(user_id, tweet, last_tweet_id, pool){
         //TODO: fetch and process refereced tweets
 
         let ref_tweet = await fetch_tweet(tweet.referenced_tweets[i]['id']);
-        // console.log("(parse_indvidual_tweet) tweet_id",tweet_id);
         await parse_indvidual_tweet(user_id, ref_tweet.data, -1, pool)
-
-
-        // console.log(ref_tweet);
-        // parse_indvidual_tweet()
       }
     }
     else if (typeof(tweet.referenced_tweets) != 'undefined' ){
@@ -185,7 +176,6 @@ async function set_accounts(create_account_flag){
   else {
     console.log("Running set_accounts");
   }
-  // console.log("Is my if statement true");
   let sql_command = `select username, user_id from my_schema.users`
   let res = await pool
     .query(sql_command, [],)
@@ -200,8 +190,6 @@ async function set_accounts(create_account_flag){
       }
       users = temp
       return users
-      // console.log('asdfad');
-      // console.log('(set_accounts) users:', users);
     })
     return res;
 }

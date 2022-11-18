@@ -36,6 +36,18 @@ app.get('/tweets', async (req, res) => {
   pull_tweets()
 })
 
+app.get('/user_tweets/:count&:userid', async (req, res) => {
+  // TODO: WROTE ON PLANE, NEED TO TEST
+  res.sendFile('index.html', { root: frontEndDir})
+  let temp = pull_user_tweets(req.params.userid, req.params.count)
+  let json = {}
+  json[temp_users[user_id]] = temp
+
+})
+
+app.get('/userlist', async (req, res) => {
+  res.json(get_users())
+})
 
 function test_users_scope(){
   console.log("1. users: ", get_users());

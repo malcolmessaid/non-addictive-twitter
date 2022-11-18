@@ -10,12 +10,19 @@ const {set_accounts, get_users} = require('./update_tweets.js')
 
 async function pull_tweets(){
   set_accounts(false);
-  console.log("hello");
-  console.log("(pull_tweets) users:", get_users());
+  // console.log("(pull_tweets) users:", get_users());
+  let temp_users = get_users();
+  let res = {}
+  for (var user_id in temp_users) {
+    res[temp_users[user_id]] = await pull_user_tweets(user_id, 10)
+  }
+  return res
 }
 
-async function pull_user_tweets(user_id){
-  let sql_command = `select * from my_schema.tweets where user_id = ${user_id} limit 10`
+
+
+async function pull_user_tweets(user_id, tweet_count){
+  let sql_command = `select * from my_schema.tweets where user_id = ${user_id} limit ${tweet_count}`
   let res = await pool.query(sql_command, [],)
     .catch((err) => console.log(err))
     .then((res) =>{
@@ -37,7 +44,6 @@ async function pull_user_tweets(user_id){
     .then((res) =>{
       return res.rows;
     })
-  // console.log("(pull_user_tweets) quotes: ",quotes);
   for (var i = 0; i < quoted_tweets_to_pull.length; i++) {
     res[indexes[i]].quoted = quotes[i];
    }
