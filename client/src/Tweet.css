@@ -1,0 +1,19 @@
+.Tweet {
+    display: inline-block;
+    width: 500px;
+    min-height: 50px;
+    /* height: 50px; */
+    background-color: #ffffff;
+    color: #0f150f;
+    padding: 10px;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 400;
+    margin: 5px
+
+}
+
+.username {
+  font-weight: bold;
+  display: block;
+}

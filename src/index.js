@@ -19,7 +19,7 @@ const { Client, Pool } = require('pg');
 const {update, fetch_tweet, parse_indvidual_tweet, get_users} = require('./update_tweets.js');
 const {create_user} = require('./users.js')
 const {pool} = require('./database.js')
-const {pull_tweets} = require('./read_tweets.js')
+const {pull_tweets, pull_user_tweets} = require('./read_tweets.js')
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
@@ -29,24 +29,24 @@ app.get('/', async (req, res) =>
 {
   // Pulling From Tweitter
   console.log(frontEndDir);
-  res.sendFile('./index.html', { root: "frontend/"})
+  // res.sendFile('./index.html', { root: "frontend/"})
 
   console.log("Log from get/: ", );
 })
 
 
 app.get('/tweets', async (req, res) => {
-  res.sendFile('index.html', { root: frontEndDir})
-  pull_tweets()
+  // res.sendFile('index.html', { root: frontEndDir})
+  // res.json({'malcolm' : 'essaid'})
+  res.json(await pull_tweets())
 })
 
-app.get('/user_tweets/:count&:userid', async (req, res) => {
+app.get('/usertweets', async (req, res) => {
   // TODO: WROTE ON PLANE, NEED TO TEST
-  res.sendFile('index.html', { root: frontEndDir})
-  let temp = pull_user_tweets(req.params.userid, req.params.count)
-  let json = {}
-  json[temp_users[user_id]] = temp
-
+  // res.sendFile('index.html', { root: frontEndDir})
+  let temp = await pull_user_tweets(req.query.userid, req.query.count)
+  // console.log(temp);
+  res.json(temp)
 })
 
 app.get('/userlist', async (req, res) => {

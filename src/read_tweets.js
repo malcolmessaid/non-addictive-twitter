@@ -23,6 +23,7 @@ async function pull_tweets(){
 
 async function pull_user_tweets(user_id, tweet_count){
   let sql_command = `select * from my_schema.tweets where user_id = ${user_id} limit ${tweet_count}`
+  // console.log(sql_command);
   let res = await pool.query(sql_command, [],)
     .catch((err) => console.log(err))
     .then((res) =>{
@@ -60,3 +61,4 @@ async function pull_thread(tweet_id){
 
 // exports.pull_user_tweets = pull_user_tweets;
 exports.pull_tweets = pull_tweets;
+exports.pull_user_tweets = pull_user_tweets;
