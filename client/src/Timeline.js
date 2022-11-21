@@ -6,16 +6,13 @@ import Tweet from './Tweet'
 
 
 function Timeline(props){
-  // console.log(props);
   const [tweets, setTweets] = React.useState(null);
-  // const [index, setIndex] = React.useState(0);
   const [active, setActive] = React.useState(0);
     React.useEffect(() => {
         fetch(`/usertweets/?count=10&userid=${props.user_id}`)
           .then((res) => res.json())
           .then(res => {
               setTweets(res)
-              // console.log(res);
           })
 
       }, []);
@@ -29,7 +26,17 @@ function Timeline(props){
           }
         }
         else if (event.keyCode == 40){
-          setActive(active + 1);
+          if (active < 9){
+              setActive(active + 1);
+          }
+          // else if (active == 9){
+          //   let c = tweets.length + 10;
+          //   fetch(`/usertweets/?count=${c}&userid=${props.user_id}`)
+          //   .then((res) => res.json())
+          //   .then(res => {
+          //       setTweets(res)
+          //   })
+          // }
         }
       }
     }
@@ -50,7 +57,13 @@ function Timeline(props){
           </div>
       )
     }
-    return temp
+    // return temp
+
+    return (
+      <div onClick={props.onChange}>
+        <Tweet text={tweets[active].text} user={tweets[active].username} active={props.activeTimelinePassedDown}/>
+      </div>
+    )
 }
 
 export default Timeline;

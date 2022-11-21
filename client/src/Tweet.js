@@ -7,9 +7,9 @@ function Tweet(props){
   // const []
 
   return (
-    <div className='Tweet'>
+    <div  className={props.active ? "ActiveTweet Tweet" : "Tweet"}>
     <span className='username'> {props.user + ": "} </span>
-      <text className={props.active ? "ActiveTweet" : ""}>{props.text}  </text>
+      <text >{props.text}  </text>
     </div>
   )
 

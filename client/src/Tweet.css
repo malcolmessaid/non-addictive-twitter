@@ -9,7 +9,8 @@
     text-align: left;
     font-size: 15px;
     font-weight: 400;
-    margin: 5px
+    margin: 5px;
+
 
 }
 
@@ -19,5 +20,8 @@
 }
 
 .ActiveTweet {
-  font-weight: bold !important;
+  /* font-weight: bold !important; */
+  border-color: blue;
+  border-style: double;
+  border-width: thick;
 }
