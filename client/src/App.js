@@ -22,25 +22,15 @@ React.useEffect(() => {
 
 
   const handler = (event) => {
-
     if (event.keyCode == 37){ // left arrow
-      // console.log("activeTimeline before ", activeTimeline);
-      // if (activeTimeline != 0){
-        // setActiveTimeline(activeTimeline - 1);
-      // }
       let temp = activeTimeline - 1;
       setActiveTimeline(((temp % num_users) + num_users) % num_users);
     }
     else if (event.keyCode == 39){
-      // console.log("activeTimeline before ", activeTimeline);
-      // if (activeTimeline != 2){
       let temp = activeTimeline + 1;
-        // setActiveTimeline(activeTimeline + 1);
-      // }
-
       setActiveTimeline(((temp % num_users) + num_users) % num_users);
     }
-    console.log("activeTimeline after ", activeTimeline);
+    // console.log("activeTimeline after ", activeTimeline);
   }
 
   React.useEffect(() => {
@@ -66,17 +56,19 @@ React.useEffect(() => {
           <div className={ activeTimeline == 0 ? 'Timeline ActiveTimeline' : 'Timeline'} >
             <Timeline user_id="1495841608863862786"
             onChange={() => {
-              console.log("hello");
               setActiveTimeline(0)
-            }}/>
+            }}
+            activeTimelinePassedDown={activeTimeline == 0}/>
           </div>
           <div className={ activeTimeline == 1 ? 'Timeline ActiveTimeline' : 'Timeline'}>
             <Timeline user_id="44196397"
-             onChange={() => setActiveTimeline(1)}/>
+             onChange={() => setActiveTimeline(1)}
+             activeTimelinePassedDown={activeTimeline == 1}/>
           </div>
           <div className={ activeTimeline == 2 ? 'Timeline ActiveTimeline' : 'Timeline'}>
             <Timeline user_id="18989355"
-             onChange={() => setActiveTimeline(2)}/>
+             onChange={() => setActiveTimeline(2)}
+             activeTimelinePassedDown={activeTimeline == 2}/>
           </div>
         </div>
       </header>

@@ -1,7 +1,11 @@
 .App {
   text-align: center;
-
 }
+
+body {
+  overflow: hidden;
+}
+
 
 
 .App-logo {
@@ -42,6 +46,8 @@
 .ActiveTimeline {
   background-color: red;
 }
+
+
 
 .Timeline {
   display: block;

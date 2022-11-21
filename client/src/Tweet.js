@@ -9,7 +9,7 @@ function Tweet(props){
   return (
     <div className='Tweet'>
     <span className='username'> {props.user + ": "} </span>
-      <text>{props.text}  </text>
+      <text className={props.active ? "ActiveTweet" : ""}>{props.text}  </text>
     </div>
   )
 

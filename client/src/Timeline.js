@@ -6,36 +6,37 @@ import Tweet from './Tweet'
 
 
 function Timeline(props){
-  console.log(props);
+  // console.log(props);
   const [tweets, setTweets] = React.useState(null);
   // const [index, setIndex] = React.useState(0);
-  // const [active, setActive] = React.useState(false);
+  const [active, setActive] = React.useState(0);
     React.useEffect(() => {
         fetch(`/usertweets/?count=10&userid=${props.user_id}`)
           .then((res) => res.json())
           .then(res => {
               setTweets(res)
-              console.log(res);
+              // console.log(res);
           })
 
       }, []);
 
 
-    const handler = (event) => {
-      // if (!this.active){
-      //   return
-      // }
-      if (event.keyCode == 38){ // up arrow
-        console.log(event);
-      }
-      else if (event.keyCode == 40){
-        console.log(event);
+    const toggle = (event) => {
+      if (props.activeTimelinePassedDown){
+        if (event.keyCode == 38){ // up arrow
+          if (active > 0){
+              setActive(active -1);
+          }
+        }
+        else if (event.keyCode == 40){
+          setActive(active + 1);
+        }
       }
     }
     React.useEffect(() => {
-      window.addEventListener('keydown', handler);
+      window.addEventListener('keydown', toggle);
       return () => {
-          window.removeEventListener("keydown", handler);
+          window.removeEventListener("keydown", toggle);
       }
     })
 
@@ -44,8 +45,8 @@ function Timeline(props){
     for (var i = 0; i < tweets.length; i++) {
       let abc = tweets[i].text;
       temp.push(
-        <div className='flex-column' onClick={props.onChange}>
-            <Tweet text={abc} user={tweets[i].username}/>
+        <div className={ active == i ? 'flex-column ActiveTweet' : 'flex-column'} onClick={props.onChange}>
+            <Tweet text={abc} user={tweets[i].username} active={active == i && props.activeTimelinePassedDown}/>
           </div>
       )
     }
