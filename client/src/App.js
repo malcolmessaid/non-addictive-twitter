@@ -13,11 +13,13 @@ let num_users = 3;
 
 React.useEffect(() => {
     fetch("/tweets")
+    .catch(error => console.log(error))
       .then((res) => res.json())
       .then(res => {
           setTweets(res)
           console.log(res);
       })
+
   }, []);
 
 

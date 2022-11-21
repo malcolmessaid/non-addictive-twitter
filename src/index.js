@@ -29,8 +29,8 @@ app.get('/', async (req, res) =>
 {
   // Pulling From Tweitter
   console.log(frontEndDir);
-  // res.sendFile('./index.html', { root: "frontend/"})
-
+  // res.sendF/ile('./index.html', { root: "frontend/"})
+  // update();
   console.log("Log from get/: ", );
 })
 
@@ -38,6 +38,7 @@ app.get('/', async (req, res) =>
 app.get('/tweets', async (req, res) => {
   // res.sendFile('index.html', { root: frontEndDir})
   // res.json({'malcolm' : 'essaid'})
+  // console.log("hekklio");
   res.json(await pull_tweets())
 })
 

@@ -26,17 +26,17 @@ function Timeline(props){
           }
         }
         else if (event.keyCode == 40){
-          if (active < 9){
+          if (active < (tweets.length - 1)){
               setActive(active + 1);
           }
-          // else if (active == 9){
-          //   let c = tweets.length + 10;
-          //   fetch(`/usertweets/?count=${c}&userid=${props.user_id}`)
-          //   .then((res) => res.json())
-          //   .then(res => {
-          //       setTweets(res)
-          //   })
-          // }
+          else if (active == (tweets.length - 1)){
+            let c = tweets.length + 10;
+            fetch(`/usertweets/?count=${c}&userid=${props.user_id}`)
+            .then((res) => res.json())
+            .then(res => {
+                setTweets(res)
+            })
+          }
         }
       }
     }

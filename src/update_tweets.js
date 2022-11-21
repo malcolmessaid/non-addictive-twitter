@@ -26,8 +26,10 @@ function get_users(){
 async function update(){
   set_accounts(false);
   for (var user in users) {
+    console.log(user);
     let last_tweet_id = await get_most_recent_tweet(user);
-    var response = await fetch_user_timeline_from_twitter_api(user, last_tweet_id, Enum.TWEET_COUNT_FALSE)
+    var response = await fetch_user_timeline_from_twitter_api(user, last_tweet_id, -1)
+    console.log(response);
     let newest = last_tweet_id
     if (typeof(response.data) != "undefined"){
       newest = response.data[0].id
@@ -62,9 +64,10 @@ async function fetch_tweet(id)
  */
 async function fetch_user_timeline_from_twitter_api(user_id, last_tweet_id, tweet_count)
 {
-  let str = `https://api.twitter.com/2/users/${user_id}/tweets?tweet.fields=created_at&since_id=${last_tweet_id}&expansions=attachments.media_keys,referenced_tweets.id,in_reply_to_user_id`
+  let str = `https://api.twitter.com/2/users/${user_id}/tweets?tweet.fields=created_at&since_id=${last_tweet_id}&max_results=${100}&expansions=attachments.media_keys,referenced_tweets.id,in_reply_to_user_id`
   if (tweet_count != -1 || last_tweet_id == -1){
     // console.log('asdfadsfadsfads');
+    console.log("something stupid");
     str = `https://api.twitter.com/2/users/${user_id}/tweets?tweet.fields=created_at&max_results=${tweet_count}&expansions=attachments.media_keys,referenced_tweets.id,in_reply_to_user_id`
   }
 
