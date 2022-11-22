@@ -21,7 +21,8 @@ body {
 
 .App-header {
   padding-bottom: 100px;
-  background-color: #282c34;
+  /* background-color: #282c34; */
+  background-color: #ffffff;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -54,6 +55,7 @@ body {
   max-height: 500px;
   overflow-y: scroll;
   padding: 5px;
+  /* border: .5 solid black; */
   /* width: 33% */
 }
 

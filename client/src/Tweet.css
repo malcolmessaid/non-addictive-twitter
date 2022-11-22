@@ -10,13 +10,21 @@
     font-size: 15px;
     font-weight: 400;
     margin: 5px;
+    padding-bottom: 20px;
+    border: .5 solid black;
 
 
 }
 
 .username {
   font-weight: bold;
-  display: block;
+  display: inline-block;
+  width: 100%;
+  margin: 0;
+}
+
+.date {
+  font-weight: lighter;
 }
 
 .ActiveTweet {
@@ -24,4 +32,8 @@
   border-color: blue;
   border-style: double;
   border-width: thick;
+}
+
+.tweetHeader {
+  margin-bottom: 5px;
 }

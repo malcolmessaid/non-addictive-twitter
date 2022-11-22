@@ -30,23 +30,17 @@ app.get('/', async (req, res) =>
   // Pulling From Tweitter
   console.log(frontEndDir);
   // res.sendF/ile('./index.html', { root: "frontend/"})
-  // update();
+  // update();/
   console.log("Log from get/: ", );
 })
 
 
 app.get('/tweets', async (req, res) => {
-  // res.sendFile('index.html', { root: frontEndDir})
-  // res.json({'malcolm' : 'essaid'})
-  // console.log("hekklio");
   res.json(await pull_tweets())
 })
 
 app.get('/usertweets', async (req, res) => {
-  // TODO: WROTE ON PLANE, NEED TO TEST
-  // res.sendFile('index.html', { root: frontEndDir})
   let temp = await pull_user_tweets(req.query.userid, req.query.count)
-  // console.log(temp);
   res.json(temp)
 })
 
@@ -54,29 +48,13 @@ app.get('/userlist', async (req, res) => {
   res.json(get_users())
 })
 
-function test_users_scope(){
-  console.log("1. users: ", get_users());
-  update()
-  console.log("2. users: ", get_users());
-  pull_tweets()
-  console.log("3. users: ", get_users());
-}
+app.post('/createuser', async (req, res) =>{
+  create_user()
+})
 
-
-async function test_pulling_thread(id, user_id){
-  let temp = await fetch_tweet(id);
-  parse_indvidual_tweet(user_id, temp.data, -1, pool)
-}
-
-//
-// app.post('/createuser', async (req, res) =>{
-//   create_user()
-
-// })
-//
-// app.get('/refresh', async(req, res) =>{
-//   update();
-// })
+app.get('/refresh', async(req, res) =>{
+  update();
+})
 
 // CronJob to run every X-amount of time
 // var job = new CronJob('*/30 * * * * *', function()

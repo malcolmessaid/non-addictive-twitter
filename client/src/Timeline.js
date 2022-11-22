@@ -13,7 +13,9 @@ function Timeline(props){
           .then((res) => res.json())
           .then(res => {
               setTweets(res)
+              console.log(res);
           })
+
 
       }, []);
 
@@ -61,7 +63,7 @@ function Timeline(props){
 
     return (
       <div onClick={props.onChange}>
-        <Tweet text={tweets[active].text} user={tweets[active].username} active={props.activeTimelinePassedDown}/>
+        <Tweet text={tweets[active].text} date={tweets[active].datetime} user={tweets[active].username} active={props.activeTimelinePassedDown}/>
       </div>
     )
 }
