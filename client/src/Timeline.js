@@ -15,8 +15,6 @@ function Timeline(props){
               setTweets(res)
               console.log(res);
           })
-
-
       }, []);
 
 
@@ -48,22 +46,18 @@ function Timeline(props){
           window.removeEventListener("keydown", toggle);
       }
     })
+  if (!tweets) return <div>Loading...</div>;
 
-    if (!tweets) return <div>Loading...</div>;
-    let temp = []
-    for (var i = 0; i < tweets.length; i++) {
-      let abc = tweets[i].text;
-      temp.push(
-        <div className={ active == i ? 'flex-column ActiveTweet' : 'flex-column'} onClick={props.onChange}>
-            <Tweet text={abc} user={tweets[i].username} active={active == i && props.activeTimelinePassedDown}/>
-          </div>
-      )
-    }
-    // return temp
-
+  console.log(tweets);
+  console.log(tweets[active]);
     return (
       <div onClick={props.onChange}>
-        <Tweet text={tweets[active].text} date={tweets[active].datetime} user={tweets[active].username} active={props.activeTimelinePassedDown}/>
+        <Tweet text={tweets[active].text}
+              quote={tweets[active].quoted}
+               date={tweets[active].datetime}
+               user={tweets[active].username}
+               active={props.activeTimelinePassedDown}
+              />
       </div>
     )
 }

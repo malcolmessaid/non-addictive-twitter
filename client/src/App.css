@@ -52,10 +52,9 @@ body {
 .Timeline {
   display: block;
   flex-direction: row;
-  max-height: 500px;
-  overflow-y: scroll;
+  max-height: 750px;
+  /* overflow-y: scroll; */
   padding: 5px;
-  /* border: .5 solid black; */
   /* width: 33% */
 }
 

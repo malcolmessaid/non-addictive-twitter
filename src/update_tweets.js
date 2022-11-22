@@ -29,7 +29,7 @@ async function update(){
     console.log(user);
     let last_tweet_id = await get_most_recent_tweet(user);
     var response = await fetch_user_timeline_from_twitter_api(user, last_tweet_id, -1)
-    console.log(response);
+    console.log("(update) response", response);
     let newest = last_tweet_id
     if (typeof(response.data) != "undefined"){
       newest = response.data[0].id
@@ -42,8 +42,11 @@ async function update(){
  * id - id of tweet you want to pull
 */
 async function fetch_tweet(id)
+
+
 {
-  const str = `https://api.twitter.com/2/tweets/${id}?tweet.fields=created_at&expansions=attachments.media_keys,referenced_tweets.id,in_reply_to_user_id`
+              // `https://api.twitter.com/2/tweets/:id?tweet.fields=created_at&expansions=attachments.media_keys,referenced_tweets.id,in_reply_to_user_id`
+  const str = `https://api.twitter.com/2/tweets/${id}?tweet.fields=created_at&expansions=attachments.media_keys,referenced_tweets.id,in_reply_to_user_id,author_id`
   // const str = `https://api.twitter.com/2/tweets/` + id
   const options = {
     headers: new fetch.Headers({
@@ -67,7 +70,6 @@ async function fetch_user_timeline_from_twitter_api(user_id, last_tweet_id, twee
   let str = `https://api.twitter.com/2/users/${user_id}/tweets?tweet.fields=created_at&since_id=${last_tweet_id}&max_results=${100}&expansions=attachments.media_keys,referenced_tweets.id,in_reply_to_user_id`
   if (tweet_count != -1 || last_tweet_id == -1){
     // console.log('asdfadsfadsfads');
-    console.log("something stupid");
     str = `https://api.twitter.com/2/users/${user_id}/tweets?tweet.fields=created_at&max_results=${tweet_count}&expansions=attachments.media_keys,referenced_tweets.id,in_reply_to_user_id`
   }
 
@@ -82,6 +84,24 @@ async function fetch_user_timeline_from_twitter_api(user_id, last_tweet_id, twee
       return JSON.parse(data)
     })
   return res
+}
+
+async function fetch_username(user_id){
+  let str = "https://api.twitter.com/2/users/" + user_id
+
+  res = await fetch(str,
+  {
+    headers: new fetch.Headers({
+        'User-Agent':'art_project_2_3',
+        'Authorization': process.env.BEARER,
+    }),
+  }).then(res => res.text())
+    .then(data => {
+      return JSON.parse(data)
+    })
+
+    console.log("username", res);
+  return res.data.username
 }
 
 
@@ -141,6 +161,10 @@ async function parse_indvidual_tweet(user_id, tweet, last_tweet_id, pool){
       for (var i = 0; i < tweet.referenced_tweets.length; i++) {
         referenced_tweets.push(tweet.referenced_tweets[i]['id'])
         reference_type.push(tweet.referenced_tweets[i]['type'])
+
+        let ref_tweet = await fetch_tweet(tweet.referenced_tweets[i]['id']);
+        console.log("ref_tweet", ref_tweet);
+        await parse_indvidual_tweet(ref_tweet.data.author_id, ref_tweet.data, -1, pool)
         //TODO: fetch and process refereced tweets
       }
     }
@@ -151,9 +175,16 @@ async function parse_indvidual_tweet(user_id, tweet, last_tweet_id, pool){
       // deal with saving the images later
       referenced_media = tweet.attachments.media_keys
     }
+
+
+
     let sql_command = 'insert into my_schema.tweets("id", text, user_id, referenced_tweets, referenced_media, username, type, datetime) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *'
     // set username to accoubts. if does not exist. pull from twitter api?
-    let values = [tweet_id, text_to_save, user_id, referenced_tweets, referenced_media, users[user_id.toString()],reference_type, datetime]
+    let username = users[user_id.toString()]
+    if (!(user_id.toString() in users)){
+      username = await fetch_username(user_id)
+    }
+    let values = [tweet_id, text_to_save, user_id, referenced_tweets, referenced_media, username,reference_type, datetime]
     pool.query(sql_command, values, (err, res) =>{
       if (err){ console.log(err);}
       else {}

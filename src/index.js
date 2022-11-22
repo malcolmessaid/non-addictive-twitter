@@ -43,15 +43,17 @@ app.get('/usertweets', async (req, res) => {
   let temp = await pull_user_tweets(req.query.userid, req.query.count)
   res.json(temp)
 })
-
-app.get('/userlist', async (req, res) => {
-  res.json(get_users())
+//
+// app.get('/userlist', async (req, res) => {
+//   res.json(get_users())
+// })
+// //
+app.get('/createuser', async (req, res) =>{
+  create_user('AccountMalcolm')
+  create_user('elonmusk')
+  create_user('micsolana')
 })
-
-app.post('/createuser', async (req, res) =>{
-  create_user()
-})
-
+// //
 app.get('/refresh', async(req, res) =>{
   update();
 })

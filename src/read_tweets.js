@@ -10,7 +10,6 @@ const {set_accounts, get_users} = require('./update_tweets.js')
 
 async function pull_tweets(){
   set_accounts(false);
-  // console.log("(pull_tweets) users:", get_users());
   let temp_users = get_users();
   let res = {}
   for (var user_id in temp_users) {
@@ -23,9 +22,8 @@ async function pull_tweets(){
 
 async function pull_user_tweets(user_id, tweet_count){
   let sql_command = `select * from my_schema.tweets where user_id = ${user_id}
-      order by datetime desc 
+      order by datetime desc
       limit ${tweet_count} `
-  // console.log(sql_command);
   let res = await pool.query(sql_command, [],)
     .catch((err) => console.log(err))
     .then((res) =>{
@@ -41,14 +39,33 @@ async function pull_user_tweets(user_id, tweet_count){
       indexes.push(i)
     }
   }
+
+  // this is annoying
   let quote_sql_command = 'SELECT * FROM my_schema.tweets WHERE id = ANY($1::bigint[])'
   let quotes = await pool.query(quote_sql_command, [quoted_tweets_to_pull],)
     .catch((err) => console.log(err))
     .then((res) =>{
+      // console.log(res.rows);
       return res.rows;
     })
-  for (var i = 0; i < quoted_tweets_to_pull.length; i++) {
-    res[indexes[i]].quoted = quotes[i];
+  // console.log(quoted_tweets_to_pull);
+  for (var i = 0; i < res.length; i++) {
+    // console.log(quotes);
+    // console.log("indexes", indexes);
+    if (indexes.includes(i)){
+      let temp = quoted_tweets_to_pull[indexes.indexOf(i)]
+      // console.log(temp);
+      for (var j = 0; j < quotes.length; j++) {
+        if (quotes[j].id == temp){
+            res[i].quoted = quotes[j];
+        }
+      }
+
+    }
+    else {
+      res[i].quoted = {};
+    }
+
    }
    return res
 }

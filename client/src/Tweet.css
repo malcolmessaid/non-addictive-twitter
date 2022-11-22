@@ -2,7 +2,6 @@
     display: inline-block;
     width: 350px;
     min-height: 50px;
-    /* height: 50px; */
     background-color: #ffffff;
     color: #0f150f;
     padding: 10px;
@@ -11,13 +10,32 @@
     font-weight: 400;
     margin: 5px;
     padding-bottom: 20px;
-    /* border: .5 solid black; */
     border-color: #D3D3D3;
     border-style: solid;
     border-width: thin;
     border-radius: 3px;
 
 
+}
+
+.QuoteTweet {
+  display: inline-block;
+  width: 300px;
+  min-height: 35px;
+  background-color: #ffffff;
+  color: #0f150f;
+  padding: 10px;
+  text-align: left;
+  font-size: 15px;
+  font-weight: 400;
+  margin: 5px;
+  margin-top: 10px;
+  padding-bottom: 20px;
+  border-color: #D3D3D3;
+  border-style: solid;
+  border-width: thin;
+  border-radius: 3px;
+  overflow-y: hidden;
 }
 
 .username {
@@ -32,7 +50,6 @@
 }
 
 .ActiveTweet {
-  /* font-weight: bold !important; */
   border-color: rgb(29, 155, 240);
   border-style: solid;
   border-width: thin;
